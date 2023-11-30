@@ -4,16 +4,15 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-        <title>Simple Clock Demo</title>
+        <title>PyScript Hello World</title>
 
         <link rel="icon" type="image/png" href="favicon.png" />
         <link
             rel="stylesheet"
             href="https://pyscript.net/latest/pyscript.css"
         />
-
-        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <link rel="stylesheet" href="./assets/css/examples.css" />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     </head>
 
     <body>
@@ -22,48 +21,82 @@
                 <a href="/">
                     <img src="./logo.png" class="logo" />
                 </a>
-                <a class="title" href="" style="color: #f0ab3c">Simple Clock</a>
+                <a class="title" href="" style="color: #f0ab3c">Hello World</a>
             </div>
         </nav>
-        <section class="pyscript">
-            <div class="font-mono">
-                start time: <label id="outputDiv"></label>
-            </div>
-            <div id="outputDiv2" class="font-mono"></div>
-            <div id="outputDiv3" class="font-mono"></div>
 
-            <py-tutor modules="utils.py">
-                <py-config>
-                    plugins = [
-                      "https://pyscript.net/latest/plugins/python/py_tutor.py"
-                    ]
-                    [[fetch]]
-                    files = ["./utils.py"]
-                </py-config>
+        <py-tutor>
+            <py-config>
+                packages = [
+                  "google-api-python-client"
+                ]
+                plugins = [
+                  "https://pyscript.net/latest/plugins/python/py_tutor.py"
+                ]
+            </py-config>
+
+            
                 <py-script>
-                    import utils
-                    display(utils.now())
+                    print('INHACUNHADA')
+                    import micropip
+                    await micropip.install("ssl")
+                    import os, pickle
+
+import googleapiclient.discovery
+
+# adiicone aqui o ID do video
+id_video = "06_UkzWEEwI"
+
+# Antes de usar, você precisa de uma developer key do YT
+#DEVELOPER_KEY = "AIzaSyBk-qg7MEXxCUgVA8W7lsfVKerCkRW73Jk"
+DEVELOPER_KEY = "AIzaSyA8B6cAFS48t3SEJh2hnNIO_liHA6bJlIw"
+
+def main():
+    # Disable OAuthlib's HTTPS verification when running locally.
+    # *DO NOT* leave this option enabled in production.
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+    api_service_name = "youtube"
+    api_version = "v3"
+    
+
+    youtube = googleapiclient.discovery.build(
+        api_service_name, api_version, developerKey = DEVELOPER_KEY)
+
+    nextPageToken = ''
+
+    comments = []
+    while True:
+
+        request = youtube.commentThreads().list(
+            part="snippet",
+            #allThreadsRelatedToChannelId="UCaqc3TH-ZdPw7OTIlndvSgQ",
+            videoId= id_video,
+            pageToken=nextPageToken
+        )
+        response = request.execute()
+
+        # for k in response['items'][0]['snippet'].keys():
+        #     print(k)
+        for item in response['items']:
+            # print('--------------------------')
+            # print(item['snippet']['topLevelComment']['snippet']['textOriginal'])
+            # print('--------------------------')
+            comments.append(item['snippet']['topLevelComment']['snippet']['textOriginal'])
+        
+        print(f"Read {len(comments)} already ...")
+
+        try:
+            nextPageToken = response['nextPageToken']
+        except:
+            break
+
+    with open('fnfcomments', 'wb') as fp:
+        pickle.dump(comments, fp)
+
+if __name__ == "__main__":
+    main()
                 </py-script>
-
-                <py-script>
-                    from utils import now
-                    import asyncio
-
-                    async def foo():
-                      while True:
-                        await asyncio.sleep(1)
-                        output = now()
-                        Element("outputDiv2").write(output)
-
-                        out3 = Element("outputDiv3")
-                        if output[-1] in ["0", "4", "8"]:
-                          out3.write("It's espresso time!")
-                        else:
-                          out3.clear()
-
-                    pyscript.run_until_complete(foo())
-                </py-script>
-            </py-tutor>
-        </section>
+        </py-tutor>
     </body>
 </html>
